@@ -5,16 +5,25 @@
     layout="inline"
     @submit="doSearch"
   >
-    <a-form-item field="appId" label="应用id">
-      <a-input-number
-        v-model="formSearchParams.appId"
-        placeholder="请输入应用id"
+    <a-form-item field="resultName" label="结果名称">
+      <a-input
+        v-model="formSearchParams.resultName"
+        placeholder="请输入结果名称"
+        allow-clear
       />
     </a-form-item>
-    <a-form-item field="userId" label="用户id">
+    <a-form-item field="resultDesc" label="结果描述">
+      <a-input
+        v-model="formSearchParams.resultDesc"
+        placeholder="请输入结果描述"
+        allow-clear
+      />
+    </a-form-item>
+    <a-form-item field="appId" label="应用 id">
       <a-input-number
-        v-model="formSearchParams.userId"
-        placeholder="请输入用户id"
+        v-model="formSearchParams.appId"
+        placeholder="请输入应用 id"
+        allow-clear
       />
     </a-form-item>
     <a-form-item>
@@ -37,6 +46,12 @@
     <template #resultPicture="{ record }">
       <a-image width="64" :src="record.resultPicture" />
     </template>
+    <template #appType="{ record }">
+      {{ APP_TYPE_MAP[record.appType] }}
+    </template>
+    <template #scoringStrategy="{ record }">
+      {{ APP_SCORING_STRATEGY_MAP[record.scoringStrategy] }}
+    </template>
     <template #createTime="{ record }">
       {{ dayjs(record.createTime).format("YYYY-MM-DD HH:mm:ss") }}
     </template>
@@ -53,15 +68,16 @@
 
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
-import API from "@/api";
-import message from "@arco-design/web-vue/es/message";
 import {
   deleteUserAnswerUsingPost,
-  listUserAnswerByPageUsingPost,
+  listMyUserAnswerVoByPageUsingPost,
 } from "@/api/userAnswerController";
-import dayjs from "dayjs";
+import API from "@/api";
+import message from "@arco-design/web-vue/es/message";
+import { dayjs } from "@arco-design/web-vue/es/_utils/date";
+import { APP_SCORING_STRATEGY_MAP, APP_TYPE_MAP } from "@/constant/app";
 
-const formSearchParams = ref<API.UserAnswer>({});
+const formSearchParams = ref<API.UserAnswerQueryRequest>({});
 
 // 初始化搜索条件（不应该被修改）
 const initSearchParams = {
@@ -72,14 +88,14 @@ const initSearchParams = {
 const searchParams = ref<API.UserAnswerQueryRequest>({
   ...initSearchParams,
 });
-const dataList = ref<API.User[]>([]);
+const dataList = ref<API.UserAnswerVO[]>([]);
 const total = ref<number>(0);
 
 /**
  * 加载数据
  */
 const loadData = async () => {
-  const res = await listUserAnswerByPageUsingPost(searchParams.value);
+  const res = await listMyUserAnswerVoByPageUsingPost(searchParams.value);
   if (res.data.code === 0) {
     dataList.value = res.data.data?.records || [];
     total.value = res.data.data?.total || 0;
@@ -113,7 +129,7 @@ const onPageChange = (page: number) => {
  * 删除
  * @param record
  */
-const doDelete = async (record: API.User) => {
+const doDelete = async (record: API.UserAnswer) => {
   if (!record.id) {
     return;
   }
@@ -138,39 +154,27 @@ watchEffect(() => {
 // 表格列配置
 const columns = [
   {
-    title: "ID",
+    title: "id",
     dataIndex: "id",
   },
   {
-    title: "应用 ID",
-    dataIndex: "appId",
-  },
-  {
-    title: "应用类型",
-    dataIndex: "appType",
-  },
-  {
-    title: "评分策略",
-    dataIndex: "scoringStrategy",
-  },
-  {
-    title: "用户答案",
+    title: "选项",
     dataIndex: "choices",
   },
   {
-    title: "评分结果 ID",
+    title: "结果 id",
     dataIndex: "resultId",
   },
   {
-    title: "结果名称",
+    title: "名称",
     dataIndex: "resultName",
   },
   {
-    title: "结果描述",
+    title: "描述",
     dataIndex: "resultDesc",
   },
   {
-    title: "结果图标",
+    title: "图片",
     dataIndex: "resultPicture",
     slotName: "resultPicture",
   },
@@ -179,18 +183,26 @@ const columns = [
     dataIndex: "resultScore",
   },
   {
-    title: "用户 ID",
-    dataIndex: "userId",
+    title: "应用 id",
+    dataIndex: "appId",
+  },
+  {
+    title: "应用类型",
+    dataIndex: "appType",
+    slotName: "appType",
+  },
+  {
+    title: "评分策略",
+    dataIndex: "scoringStrategy",
+    slotName: "scoringStrategy",
   },
   {
     title: "创建时间",
     dataIndex: "createTime",
     slotName: "createTime",
-  },
-  {
-    title: "更新时间",
-    dataIndex: "updateTime",
-    slotName: "updateTime",
+    sortable: {
+      sortDirections: ["descend", "ascend"],
+    },
   },
   {
     title: "操作",

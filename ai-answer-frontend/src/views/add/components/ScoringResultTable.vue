@@ -5,16 +5,18 @@
     layout="inline"
     @submit="doSearch"
   >
-    <a-form-item field="appId" label="应用id">
-      <a-input-number
-        v-model="formSearchParams.appId"
-        placeholder="请输入应用id"
+    <a-form-item field="resultName" label="结果名称">
+      <a-input
+        v-model="formSearchParams.resultName"
+        placeholder="请输入结果名称"
+        allow-clear
       />
     </a-form-item>
-    <a-form-item field="userId" label="用户id">
-      <a-input-number
-        v-model="formSearchParams.userId"
-        placeholder="请输入用户id"
+    <a-form-item field="resultDesc" label="结果描述">
+      <a-input
+        v-model="formSearchParams.resultDesc"
+        placeholder="请输入结果描述"
+        allow-clear
       />
     </a-form-item>
     <a-form-item>
@@ -45,6 +47,7 @@
     </template>
     <template #optional="{ record }">
       <a-space>
+        <a-button status="success" @click="doUpdate?.(record)">修改</a-button>
         <a-button status="danger" @click="doDelete(record)">删除</a-button>
       </a-space>
     </template>
@@ -52,34 +55,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from "vue";
+import { defineExpose, defineProps, ref, watchEffect, withDefaults } from "vue";
+import {
+  deleteScoringResultUsingPost,
+  listScoringResultVoByPageUsingPost,
+} from "@/api/scoringResultController";
 import API from "@/api";
 import message from "@arco-design/web-vue/es/message";
-import {
-  deleteUserAnswerUsingPost,
-  listUserAnswerByPageUsingPost,
-} from "@/api/userAnswerController";
-import dayjs from "dayjs";
+import { dayjs } from "@arco-design/web-vue/es/_utils/date";
 
-const formSearchParams = ref<API.UserAnswer>({});
+interface Props {
+  appId: string;
+  doUpdate: (scoringResult: API.ScoringResultVO) => void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  appId: () => {
+    return "";
+  },
+});
+
+const formSearchParams = ref<API.ScoringResultQueryRequest>({});
 
 // 初始化搜索条件（不应该被修改）
 const initSearchParams = {
   current: 1,
   pageSize: 10,
+  sortField: "createTime",
+  sortOrder: "descend",
 };
 
-const searchParams = ref<API.UserAnswerQueryRequest>({
+const searchParams = ref<API.ScoringResultQueryRequest>({
   ...initSearchParams,
 });
-const dataList = ref<API.User[]>([]);
+const dataList = ref<API.ScoringResultVO[]>([]);
 const total = ref<number>(0);
 
 /**
  * 加载数据
  */
 const loadData = async () => {
-  const res = await listUserAnswerByPageUsingPost(searchParams.value);
+  if (!props.appId) {
+    return;
+  }
+  const params = {
+    appId: props.appId as any,
+    ...searchParams.value,
+  };
+  const res = await listScoringResultVoByPageUsingPost(params);
   if (res.data.code === 0) {
     dataList.value = res.data.data?.records || [];
     total.value = res.data.data?.total || 0;
@@ -87,6 +110,11 @@ const loadData = async () => {
     message.error("获取数据失败，" + res.data.message);
   }
 };
+
+// 暴露函数给父组件
+defineExpose({
+  loadData,
+});
 
 /**
  * 执行搜索
@@ -113,12 +141,12 @@ const onPageChange = (page: number) => {
  * 删除
  * @param record
  */
-const doDelete = async (record: API.User) => {
+const doDelete = async (record: API.ScoringResult) => {
   if (!record.id) {
     return;
   }
 
-  const res = await deleteUserAnswerUsingPost({
+  const res = await deleteScoringResultUsingPost({
     id: record.id,
   });
   if (res.data.code === 0) {
@@ -138,49 +166,29 @@ watchEffect(() => {
 // 表格列配置
 const columns = [
   {
-    title: "ID",
+    title: "id",
     dataIndex: "id",
   },
   {
-    title: "应用 ID",
-    dataIndex: "appId",
-  },
-  {
-    title: "应用类型",
-    dataIndex: "appType",
-  },
-  {
-    title: "评分策略",
-    dataIndex: "scoringStrategy",
-  },
-  {
-    title: "用户答案",
-    dataIndex: "choices",
-  },
-  {
-    title: "评分结果 ID",
-    dataIndex: "resultId",
-  },
-  {
-    title: "结果名称",
+    title: "名称",
     dataIndex: "resultName",
   },
   {
-    title: "结果描述",
+    title: "描述",
     dataIndex: "resultDesc",
   },
   {
-    title: "结果图标",
+    title: "图片",
     dataIndex: "resultPicture",
     slotName: "resultPicture",
   },
   {
-    title: "得分",
-    dataIndex: "resultScore",
+    title: "结果属性",
+    dataIndex: "resultProp",
   },
   {
-    title: "用户 ID",
-    dataIndex: "userId",
+    title: "评分范围",
+    dataIndex: "resultScoreRange",
   },
   {
     title: "创建时间",
