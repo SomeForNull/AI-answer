@@ -1,17 +1,21 @@
 import { RouteRecordRaw } from "vue-router";
-import HomeView from "@/views/HomeView.vue";
+import HomePage from "@/views/HomePage.vue";
 import UserLayout from "@/layouts/UserLayout.vue";
 import ACCESS_ENUM from "@/access/accessEnum";
 import NoAuthPage from "@/views/NoAuthPage.vue";
 import UserLoginPage from "@/views/user/UserLoginPage.vue";
 import UserRegisterPage from "@/views/user/UserRegisterPage.vue";
 import AdminUserPage from "@/views/admin/AdminUserPage.vue";
+import AppManagerPage from "@/views/admin/AppManagerPage.vue";
+import QuestionManagerPage from "@/views/admin/QuestionManagerPage.vue";
+import ScoringResultManagerPage from "@/views/admin/ScoringResultManagerPage.vue";
+import UserAnswerManagerPage from "@/views/admin/UserAnswerManagerPage.vue";
 
 export const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "home",
-    component: HomeView,
+    name: "主页",
+    component: HomePage,
   },
   {
     path: "/admin/user",
@@ -22,17 +26,41 @@ export const routes: Array<RouteRecordRaw> = [
     },
   },
   {
-    path: "/noAuth",
-    name: "无权限",
-    component: NoAuthPage,
+    path: "/admin/app",
+    name: "应用管理",
+    component: AppManagerPage,
     meta: {
-      hideInMenu: true,
+      access: ACCESS_ENUM.ADMIN,
     },
   },
   {
-    path: "/hide",
-    name: "隐藏页面",
-    component: HomeView,
+    path: "/admin/question",
+    name: "题目管理",
+    component: QuestionManagerPage,
+    meta: {
+      access: ACCESS_ENUM.ADMIN,
+    },
+  },
+  {
+    path: "/admin/scoringResult",
+    name: "评分管理",
+    component: ScoringResultManagerPage,
+    meta: {
+      access: ACCESS_ENUM.ADMIN,
+    },
+  },
+  {
+    path: "/admin/userAnswer",
+    name: "回答管理",
+    component: UserAnswerManagerPage,
+    meta: {
+      access: ACCESS_ENUM.ADMIN,
+    },
+  },
+  {
+    path: "/noAuth",
+    name: "无权限",
+    component: NoAuthPage,
     meta: {
       hideInMenu: true,
     },
@@ -56,14 +84,5 @@ export const routes: Array<RouteRecordRaw> = [
     meta: {
       hideInMenu: true,
     },
-  },
-  {
-    path: "/about",
-    name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
   },
 ];

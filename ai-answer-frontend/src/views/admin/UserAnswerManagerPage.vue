@@ -5,13 +5,16 @@
     layout="inline"
     @submit="doSearch"
   >
-    <a-form-item field="userName" label="用户名">
-      <a-input v-model="formSearchParams.userName" placeholder="请输入用户名" />
+    <a-form-item field="appId" label="应用id">
+      <a-input-number
+        v-model="formSearchParams.appId"
+        placeholder="请输入应用id"
+      />
     </a-form-item>
-    <a-form-item field="userProfile" label="用户简介">
-      <a-input
-        v-model="formSearchParams.userProfile"
-        placeholder="请输入用户简介"
+    <a-form-item field="userId" label="用户id">
+      <a-input-number
+        v-model="formSearchParams.userId"
+        placeholder="请输入用户id"
       />
     </a-form-item>
     <a-form-item>
@@ -50,15 +53,15 @@
 
 <script setup lang="ts">
 import { ref, watchEffect } from "vue";
-import {
-  deleteUserUsingPost,
-  listUserByPageUsingPost,
-} from "@/api/userController";
 import API from "@/api";
 import message from "@arco-design/web-vue/es/message";
+import {
+  deleteUserAnswerUsingPost,
+  listUserAnswerByPageUsingPost,
+} from "@/api/userAnswerController";
 import dayjs from "dayjs";
 
-const formSearchParams = ref<API.UserQueryRequest>({});
+const formSearchParams = ref<API.UserAnswer>({});
 
 // 初始化搜索条件（不应该被修改）
 const initSearchParams = {
@@ -66,7 +69,7 @@ const initSearchParams = {
   pageSize: 10,
 };
 
-const searchParams = ref<API.UserQueryRequest>({
+const searchParams = ref<API.UserAnswerQueryRequest>({
   ...initSearchParams,
 });
 const dataList = ref<API.User[]>([]);
@@ -76,7 +79,7 @@ const total = ref<number>(0);
  * 加载数据
  */
 const loadData = async () => {
-  const res = await listUserByPageUsingPost(searchParams.value);
+  const res = await listUserAnswerByPageUsingPost(searchParams.value);
   if (res.data.code === 0) {
     dataList.value = res.data.data?.records || [];
     total.value = res.data.data?.total || 0;
@@ -115,7 +118,7 @@ const doDelete = async (record: API.User) => {
     return;
   }
 
-  const res = await deleteUserUsingPost({
+  const res = await deleteUserAnswerUsingPost({
     id: record.id,
   });
   if (res.data.code === 0) {
@@ -135,29 +138,48 @@ watchEffect(() => {
 // 表格列配置
 const columns = [
   {
-    title: "id",
+    title: "ID",
     dataIndex: "id",
   },
   {
-    title: "账号",
-    dataIndex: "userAccount",
+    title: "应用 ID",
+    dataIndex: "appId",
   },
   {
-    title: "用户名",
-    dataIndex: "userName",
+    title: "应用类型",
+    dataIndex: "appType",
   },
   {
-    title: "用户头像",
-    dataIndex: "userAvatar",
-    slotName: "userAvatar",
+    title: "评分策略",
+    dataIndex: "scoringStrategy",
   },
   {
-    title: "用户简介",
-    dataIndex: "userProfile",
+    title: "用户答案",
+    dataIndex: "choices",
   },
   {
-    title: "权限",
-    dataIndex: "userRole",
+    title: "评分结果 ID",
+    dataIndex: "resultId",
+  },
+  {
+    title: "结果名称",
+    dataIndex: "resultName",
+  },
+  {
+    title: "结果描述",
+    dataIndex: "resultDesc",
+  },
+  {
+    title: "结果图标",
+    dataIndex: "resultPicture",
+  },
+  {
+    title: "得分",
+    dataIndex: "resultScore",
+  },
+  {
+    title: "用户 ID",
+    dataIndex: "userId",
   },
   {
     title: "创建时间",
