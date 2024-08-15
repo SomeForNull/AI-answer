@@ -6,6 +6,7 @@ import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
 import com.zhipu.oapi.service.v4.model.ModelApiResponse;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.List;
 /**\
  * 通用Ai调用能力
  */
+@Component
 public class AiManager {
     @Resource
     private ClientV4 clientV4;
@@ -25,7 +27,7 @@ public class AiManager {
     public String doRequest(List<ChatMessage> messages, Boolean stream, Float temperature) {
         // 构造请求
         ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
-                .model(Constants.ModelChatGLM4)
+                .model("GLM-4-0520")
                 .stream(stream)
                 .invokeMethod(Constants.invokeMethod)
                 .temperature(temperature)
