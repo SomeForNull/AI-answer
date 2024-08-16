@@ -16,7 +16,10 @@ public class UserAnswerAddRequest implements Serializable {
      * 应用 id
      */
     private Long appId;
-
+    /**
+     *  id(用于保证幂等性)
+     */
+    private Long id;
     /**
      * 用户答案（JSON 数组）
      */
