@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 题目接口
-
  */
 @RestController
 @RequestMapping("/question")
@@ -57,7 +56,6 @@ public class QuestionController {
     // 注入 VIP 线程池
     @Resource
     private Scheduler vipScheduler;
-
 
 
     // region 增删改查
@@ -320,8 +318,9 @@ public class QuestionController {
         List<QuestionContentDTO> questionContentDTOList = JSONUtil.toList(json, QuestionContentDTO.class);
         return ResultUtils.success(questionContentDTOList);
     }
+
     @GetMapping("/ai_generate/sse")
-    public SseEmitter aiGenerateQuestionSSE(AiGenerateQuestionRequest aiGenerateQuestionRequest,HttpServletRequest request) {
+    public SseEmitter aiGenerateQuestionSSE(AiGenerateQuestionRequest aiGenerateQuestionRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(aiGenerateQuestionRequest == null, ErrorCode.PARAMS_ERROR);
         // 获取参数
         Long appId = aiGenerateQuestionRequest.getAppId();
@@ -341,12 +340,13 @@ public class QuestionController {
         // 拼接完整题目
         StringBuilder stringBuilder = new StringBuilder();
         //获取登录用户
-        User loginUser = userService.getLoginUser(request);
+        //User loginUser = userService.getLoginUser(request);
         //默认池
         Scheduler scheduler = Schedulers.single();
-        if("vip".equals(loginUser.getUserRole())||"admin".equals(loginUser.getUserRole())){
-            scheduler= vipScheduler;
-        }
+//        if("vip".equals(loginUser.getUserRole())||"admin".equals(loginUser.getUserRole())){
+//            scheduler= vipScheduler;
+//        }
+        scheduler = vipScheduler;
         // 默认全局线程池
         modelDataFlowable
                 .observeOn(scheduler)
